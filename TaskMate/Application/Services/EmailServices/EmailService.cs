@@ -1,7 +1,7 @@
 ﻿using MimeKit;
 using MailKit.Net.Smtp;
 
-namespace TaskMate.Application.Services.EmailService
+namespace TaskMate.Application.Services.EmailServices
 {
     public class EmailService
     {

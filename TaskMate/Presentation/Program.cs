@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Data;
 using System.Text;
-using TaskMate.Application.Services.EmailService;
+using TaskMate.Application.Services.EmailServices;
 using TaskMate.Core.Models;
 using TaskMate.Core.Roles;
 using TaskMate.Infrastructure.AuthService;
@@ -15,6 +15,9 @@ using Serilog;
 using Microsoft.Extensions.DependencyInjection;
 using TaskMate.Application.Mapping;
 using TaskMate.Application.Services.CustomMiddlewares;
+using TaskMate.Infrastructure.Repository;
+using TaskMate.Application.Services.AuthServices;
+using TaskMate.Application.Services.EmailServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,6 +109,8 @@ try
     }
 
 
+    builder.Services.AddScoped<IUserRepository, UserRepository>();
+    builder.Services.AddScoped<AuthService, AuthService>();
 
     //Added Scoped files
     builder.Services.AddScoped<JwtService>();
@@ -147,8 +152,13 @@ try
 
     app.Run();
 
-} 
+}
 catch (Exception ex)
 {
-    Log.Fatal("Application crashed!{Time}:", DateTime.UtcNow);
-} 
+    Log.Fatal(ex, "Application crashed at {Time}", DateTime.UtcNow);
+}
+finally
+{
+    Log.CloseAndFlush();
+}
+

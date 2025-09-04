@@ -31,11 +31,10 @@
 
   <ItemGroup>
     <Folder Include="Application\Mapping\" />
-    <Folder Include="Application\Services\EmailService\" />
+    <Folder Include="Application\Services\EmailServices\" />
     <Folder Include="Core\Roles\" />
     <Folder Include="Infrastructure\Data\" />
     <Folder Include="Infrastructure\AuthService\" />
-    <Folder Include="Infrastructure\Repository\" />
   </ItemGroup>
 
 </Project>

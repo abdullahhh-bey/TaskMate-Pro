@@ -13,7 +13,7 @@ namespace TaskMate.Application.Services.CustomMiddlewares
             _logger = logger;
         }
 
-        public async Task RequestLogger(HttpContext context)
+        public async Task InvokeAsync(HttpContext context)
         {
             _logger.LogInformation("Incoming Request: {Method} {Path} at {Time}", 
             context.Request?.Method, context.Request?.Path.Value, DateTime.UtcNow);
