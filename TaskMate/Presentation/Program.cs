@@ -147,7 +147,7 @@ try
     Log.Information("All Middleware crossed, reached controllers {Time}:", DateTime.UtcNow);
     app.MapControllers();
 
-
+    //Seeded roles in the database safelyu
     await SeedRolesAsync(app);
 
     app.Run();
