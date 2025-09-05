@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -83,9 +85,9 @@ namespace TaskMate.Infrastructure.AuthService
 
 
 
-        //public async Task<ResponseTokensDTO> ValidateGenerateTokens( RefreshTokenRequestDTO dto)
+        //public async Task<ResponseTokensDTO> ValidateGenerateTokens(RefreshTokenRequestDTO dto)
         //{
-            
+                
         //}
 
 
@@ -95,7 +97,7 @@ namespace TaskMate.Infrastructure.AuthService
             
             var refreshToken = new RefreshToken
             {
-                Token = Guid.NewGuid().ToString("A"),
+                Token = Guid.NewGuid().ToString("N"),
                 IsChanged = false,
                 Expiry = DateTime.UtcNow.AddHours(1),
                 UserId = user.Id
@@ -106,8 +108,8 @@ namespace TaskMate.Infrastructure.AuthService
 
             return refreshToken;
         }
-           
-        
+
+     
 
     }
 }

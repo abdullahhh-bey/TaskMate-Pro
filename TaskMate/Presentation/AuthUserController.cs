@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TaskMate.Application.Services.AuthServices;
 using TaskMate.Core.DTO.AuthDTO;
@@ -23,6 +24,10 @@ namespace TaskMate.Presentation
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAPI(RegisterDTO dto)
         {
+
+            if (!ModelState.IsValid)
+                return BadRequest("Incomplete Information");
+
             var check = await _service.RegisterService(dto);
             if (!check)
             {
@@ -37,6 +42,10 @@ namespace TaskMate.Presentation
         [HttpPost("confirm-email")]
         public async Task<IActionResult> EmailConfirmationAPI(ConfirmEmailDTO dto)
         {
+
+            if (!ModelState.IsValid)
+                return BadRequest("Incomplete Information");
+
             var check = await _service.EmailConfirmationService(dto);
             if (!check)
                 throw new KeyNotFoundException("Email not found.\nInvalid Email!");
@@ -45,6 +54,29 @@ namespace TaskMate.Presentation
             return Ok("Email Confirmed Successfully!.\nNow, you can login.");
         }
 
+
+        [HttpPost("login")]
+        public async Task<IActionResult> LoginAPI(LoginDTO dto)
+        {
+
+            if (!ModelState.IsValid)
+                return BadRequest("Incomplete Information");
+
+            var token = await _service.LoginService(dto);
+
+            _logger.LogInformation("User with {Email} logged in at {Time}", dto.Email, DateTime.UtcNow);
+            return Ok(new { Message = "Login Successfully!" ,Token = token.AccessToken , RefreshToken = token.RefreshToken });
+        }
+
+
+
+
+        [HttpGet("validate-token")]
+        [Authorize]
+        public async Task<IActionResult> SampleAPi()
+        {
+            return Ok("Your login api is working");
+        }
 
 
     }

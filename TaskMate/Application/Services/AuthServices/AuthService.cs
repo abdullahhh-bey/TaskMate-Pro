@@ -73,5 +73,35 @@ namespace TaskMate.Application.Services.AuthServices
         }
 
 
+        public async Task<ResponseTokensDTO> LoginService(LoginDTO dto)
+        {
+            var user = await _userRepository.GetUserByEmail(dto.Email);
+            if (user == null)
+                throw new KeyNotFoundException("Email not registered!");
+
+            if (!user.EmailConfirmed)
+                throw new BadHttpRequestException("Cannot Login right now! Your email not confirme yet.");
+
+            var checkPassword = await _userRepository.CheckPasswordAsync(user, dto.Password);
+            if (!checkPassword)
+            {
+                _logger.LogWarning("Failed Attempt to login {Email} at {Time}", dto.Email, DateTime.UtcNow);
+                throw new BadHttpRequestException("Invalid Password!");
+            }
+
+            var accessToken = await _jwtService.GenerateToken(user);
+            var refreshToken = await _jwtService.GenerateRefreshToken(user);
+
+            _logger.LogInformation("User Login Confirmed for {Email} at {Time}", dto.Email, DateTime.UtcNow);
+            
+            return new ResponseTokensDTO { 
+                AccessToken = accessToken,
+                RefreshToken = refreshToken.Token
+            };
+        }
+
+
+
+
     }
 }
