@@ -16,6 +16,7 @@ namespace TaskMate.Infrastructure.Repository
         Task<bool> CheckPasswordAsync(User user, string password);
         Task<IList<string>> GetRolesAsync(User user);
         Task<bool> UpdateUser(User user);
+        Task<bool> ChangePassword(User user, string currentPassword, string newPassword);
 
     }
 }

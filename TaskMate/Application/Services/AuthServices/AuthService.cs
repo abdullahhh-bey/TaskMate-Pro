@@ -101,6 +101,22 @@ namespace TaskMate.Application.Services.AuthServices
         }
 
 
+        public async Task<bool> ChangePassword(ChangePasswordDTO dto)
+        {
+            var user = await _userRepository.GetUserByEmail(dto.Email);
+            if(user == null)
+                throw new KeyNotFoundException("Email not registered!");
+
+            var checkpassword = await _userRepository.ChangePassword(user, dto.CurrentPassword, dto.NewPassword);
+            if(!checkpassword)
+            {
+                _logger.LogWarning("Failed Attempt to change password for {Email} at {Time}", dto.Email, DateTime.UtcNow);
+                throw new BadHttpRequestException("Invalid Password!\nCheck Password");
+            }
+
+            _logger.LogInformation("Password Changed Successfully for {Email} at {Time}", dto.Email, DateTime.UtcNow);
+            return true;
+        }
 
 
     }

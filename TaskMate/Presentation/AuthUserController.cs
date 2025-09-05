@@ -70,6 +70,20 @@ namespace TaskMate.Presentation
 
 
 
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePasswordAPI( ChangePasswordDTO dto)
+        {
+            if(!ModelState.IsValid)
+                return BadRequest("Incomplete Information");
+
+            var check = await _service.ChangePassword(dto);
+            if (!check)
+                throw new BadHttpRequestException("Failed Attempt to change password.\nInvalid Current Password!");
+
+            return Ok("Password Changed Successfully!");
+        }
+
+
 
         [HttpGet("validate-token")]
         [Authorize]

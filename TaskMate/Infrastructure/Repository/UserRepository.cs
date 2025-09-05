@@ -96,5 +96,18 @@ namespace TaskMate.Infrastructure.Repository
 
             return true;
         }
+
+
+
+        public async Task<bool> ChangePassword(User user, string currentPassword, string newPassword)
+        {
+            var check = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+            if (!check.Succeeded)
+                return false;
+
+            return true;
+        }
+
+
     }
 }
