@@ -85,7 +85,51 @@ namespace TaskMate.Presentation
 
 
 
-        [HttpGet("validate-token")]
+
+        [HttpPost("forget-password")]
+        public async Task<IActionResult> ForgetPasswordAPI(ForgetPasswordDTO dto)
+        {
+            if (!ModelState.IsValid)
+                throw new ArgumentNullException("Incomplete Information");
+
+            var check = await _service.ForgetPasswordService(dto);
+            if (check)
+                return Ok("Reset Password Confirmation Email sent to your Email!");
+
+            return BadRequest();
+        }
+
+
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPasswordAPI(ResetPasswordDTO dto)
+        {
+            if(!ModelState.IsValid)
+                throw new ArgumentNullException("Incomplete Information");
+
+            var check = await _service.ResetPasswordService(dto);
+            if(!check)
+                throw new BadHttpRequestException("Attempt Faidled");
+
+            return Ok("Password has been resetted successfully!");
+        }
+
+
+
+        [HttpPost("get-access-token")]
+        public async Task<IActionResult> GetAccessTokenAPI(RefreshTokenRequestDTO dto)
+        {
+            if (!ModelState.IsValid)
+                throw new ArgumentNullException("Incomplete Information");
+
+            var getTokens = await _service.ValidateCreateAccessTokenService(dto);
+            return Ok(getTokens);
+        }
+
+
+
+
+        [HttpGet("testing")]
         [Authorize]
         public async Task<IActionResult> SampleAPi()
         {

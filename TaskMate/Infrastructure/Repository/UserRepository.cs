@@ -91,7 +91,7 @@ namespace TaskMate.Infrastructure.Repository
         public async Task<bool> ResetPassword(User user, string token, string newPassword)
         {
             var check = await _userManager.ResetPasswordAsync(user, token, newPassword);
-            if(check == null)
+            if(!check.Succeeded)
                 return false;
 
             return true;

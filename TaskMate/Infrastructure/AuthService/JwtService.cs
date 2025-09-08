@@ -8,6 +8,7 @@ using System.Text;
 using TaskMate.Core.DTO.AuthDTO;
 using TaskMate.Core.Models;
 using TaskMate.Infrastructure.Data;
+using TaskMate.Infrastructure.Repository;
 
 namespace TaskMate.Infrastructure.AuthService
 {
@@ -17,13 +18,15 @@ namespace TaskMate.Infrastructure.AuthService
         private readonly UserManager<User> _userManager;
         private readonly ILogger<JwtService> _logger;
         private readonly TaskProDbContext _context;
+        private readonly IUserRepository _userRepository;
 
-        public JwtService(IConfiguration config, UserManager<User> userManager, ILogger<JwtService> logger, TaskProDbContext context)
+        public JwtService(IConfiguration config, UserManager<User> userManager, ILogger<JwtService> logger, TaskProDbContext context, IUserRepository userRepository)
         {
             _config = config;
             _userManager = userManager;
             _logger = logger;
             _context = context;
+            _userRepository = userRepository;
         }
 
         public async Task<string> GenerateToken(User user)
@@ -85,10 +88,35 @@ namespace TaskMate.Infrastructure.AuthService
 
 
 
-        //public async Task<ResponseTokensDTO> ValidateGenerateTokens(RefreshTokenRequestDTO dto)
-        //{
-                
-        //}
+        public async Task<ResponseTokensDTO> ValidateGenerateTokens(RefreshTokenRequestDTO dto)
+        {
+            //check validity
+            var token = _context.RefreshTokens.FirstOrDefault(r => r.Token == dto.RefreshToken);
+
+            if (token == null)
+                throw new BadHttpRequestException("Refresh token not found");
+
+            if (token.IsChanged || token.Expiry <= DateTime.UtcNow)
+                throw new BadHttpRequestException("Token is not valid or has expired");
+
+
+            var user = await _userRepository.GetUserByEmail(dto.Email);
+            if (user == null)
+                throw new KeyNotFoundException("Email not registered");
+
+            token.IsChanged = true;
+            await _context.SaveChangesAsync();
+
+            _logger.LogWarning("Creating new Access Token & Refresh Token to {Email} at {Time}", dto.Email, DateTime.UtcNow);
+            var accessToken = await GenerateToken(user);
+            var refreshToken = await GenerateRefreshToken(user);
+
+
+            return new ResponseTokensDTO { 
+                AccessToken = accessToken,
+                RefreshToken= refreshToken.Token
+            };
+        }
 
 
         public async Task<RefreshToken> GenerateRefreshToken(User user)

@@ -50,7 +50,7 @@ namespace TaskMate.Application.Services.AuthServices
 
             _logger.LogInformation("Sent Confirmation Email to {Email} at {Time}", dto.Email, DateTime.UtcNow);
 
-            await _emailService.SendEmailAsync(dto.Email, subject , message);
+            await _emailService.SendEmailAsync(dto.Email, subject, message);
             return true;
         }
 
@@ -59,7 +59,7 @@ namespace TaskMate.Application.Services.AuthServices
         public async Task<bool> EmailConfirmationService(ConfirmEmailDTO dto)
         {
             var user = await _userRepository.GetUserByEmail(dto.Email);
-            if (user == null) 
+            if (user == null)
                 return false;
 
             var checkToken = await _userRepository.ConfirmEmail(user, dto.ConfirmEmailToken);
@@ -93,8 +93,8 @@ namespace TaskMate.Application.Services.AuthServices
             var refreshToken = await _jwtService.GenerateRefreshToken(user);
 
             _logger.LogInformation("User Login Confirmed for {Email} at {Time}", dto.Email, DateTime.UtcNow);
-            
-            return new ResponseTokensDTO { 
+
+            return new ResponseTokensDTO {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken.Token
             };
@@ -104,11 +104,11 @@ namespace TaskMate.Application.Services.AuthServices
         public async Task<bool> ChangePassword(ChangePasswordDTO dto)
         {
             var user = await _userRepository.GetUserByEmail(dto.Email);
-            if(user == null)
+            if (user == null)
                 throw new KeyNotFoundException("Email not registered!");
 
             var checkpassword = await _userRepository.ChangePassword(user, dto.CurrentPassword, dto.NewPassword);
-            if(!checkpassword)
+            if (!checkpassword)
             {
                 _logger.LogWarning("Failed Attempt to change password for {Email} at {Time}", dto.Email, DateTime.UtcNow);
                 throw new BadHttpRequestException("Invalid Password!\nCheck Password");
@@ -117,6 +117,49 @@ namespace TaskMate.Application.Services.AuthServices
             _logger.LogInformation("Password Changed Successfully for {Email} at {Time}", dto.Email, DateTime.UtcNow);
             return true;
         }
+
+        public async Task<bool> ForgetPasswordService(ForgetPasswordDTO dto)
+        {
+            var user = await _userRepository.GetUserByEmail(dto.Email);
+            if (user == null)
+                throw new KeyNotFoundException("Email not registered!");
+
+            var token = await _userRepository.PasswordResetToken(user);
+            var subject = $"Reset Password Token";
+            var message = $"Reset your Password for {dto.Email}\nToken: {token}\n From Team TaskMate";
+
+            _logger.LogInformation("Sent Reset Password Email for {Email} at {Time}", dto.Email , DateTime.UtcNow);
+            await _emailService.SendEmailAsync( dto.Email , subject , message );
+
+            return true;
+        }
+
+
+
+        public async Task<bool> ResetPasswordService( ResetPasswordDTO dto)
+        {
+            var user = await _userRepository.GetUserByEmail(dto.Email);
+            if (user == null)
+                throw new KeyNotFoundException("Email not registered");
+
+            var resetToken = await _userRepository.ResetPassword(user, dto.Token, dto.NewPassword);
+            if(!resetToken)
+            {
+                _logger.LogWarning("Check token or password! Attempt Failed for {Email} with {Token}!", dto.Email, dto.Token);
+                return false;
+            }
+
+            return true;
+        }
+
+
+
+        public async Task<ResponseTokensDTO> ValidateCreateAccessTokenService(RefreshTokenRequestDTO dto)
+        {
+            return await _jwtService.ValidateGenerateTokens(dto);
+        }
+
+
 
 
     }
