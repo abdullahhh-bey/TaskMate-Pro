@@ -38,7 +38,11 @@ namespace TaskMate.Application.Services.AuthServices
 
             var result = await _userRepository.AddUser(user, dto.Password);
             if (!result.Succeeded)
-                throw new BadHttpRequestException("Invalid Password!");
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new BadHttpRequestException(errors);
+            }
+
 
 
             await _userRepository.AddRole(user, dto.Role);
